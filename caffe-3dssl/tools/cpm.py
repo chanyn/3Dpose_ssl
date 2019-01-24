@@ -1,0 +1,51 @@
+import tensorflow as tf
+import tensorflow.contrib.layers as layers
+
+def inference_pose(image)#, center_map):
+    with tf.variable_scope('PoseNet'):
+    # pool_center_lower = layers.avg_pool2d(center_map, 9, 8, padding='SAME')
+        conv1_1 = layers.conv2d(image, 64, 3, 1, activation_fn=None, scope='conv1_1')
+        conv1_1 = tf.nn.relu(conv1_1)
+        conv1_2 = layers.conv2d(conv1_1, 64, 3, 1, activation_fn=None, scope='conv1_2')
+        conv1_2 = tf.nn.relu(conv1_2)
+        pool1_stage1 = layers.max_pool2d(conv1_2, 2, 2)
+        conv2_1 = layers.conv2d(pool1_stage1, 128, 3, 1, activation_fn=None, scope='conv2_1')
+        conv2_1 = tf.nn.relu(conv2_1)
+        conv2_2 = layers.conv2d(conv2_1, 128, 3, 1, activation_fn=None, scope='conv2_2')
+        conv2_2 = tf.nn.relu(conv2_2)
+        pool2_stage1 = layers.max_pool2d(conv2_2, 2, 2)
+        conv3_1 = layers.conv2d(pool2_stage1, 256, 3, 1, activation_fn=None, scope='conv3_1')
+        conv3_1 = tf.nn.relu(conv3_1)
+        conv3_2 = layers.conv2d(conv3_1, 256, 3, 1, activation_fn=None, scope='conv3_2')
+        conv3_2 = tf.nn.relu(conv3_2)
+        conv3_3 = layers.conv2d(conv3_2, 256, 3, 1, activation_fn=None, scope='conv3_3')
+        conv3_3 = tf.nn.relu(conv3_3)
+        conv3_4 = layers.conv2d(conv3_3, 256, 3, 1, activation_fn=None, scope='conv3_4')
+        conv3_4 = tf.nn.relu(conv3_4)
+        pool3_stage1 = layers.max_pool2d(conv3_4, 2, 2)
+        conv4_1 = layers.conv2d(pool3_stage1, 512, 3, 1, activation_fn=None, scope='conv4_1')
+        conv4_1 = tf.nn.relu(conv4_1)
+        conv4_2 = layers.conv2d(conv4_1, 512, 3, 1, activation_fn=None, scope='conv4_2')
+        conv4_2 = tf.nn.relu(conv4_2)
+        conv4_3_CPM = layers.conv2d(conv4_2, 256, 3, 1, activation_fn=None, scope='conv4_3_CPM')
+        conv4_3_CPM = tf.nn.relu(conv4_3_CPM)
+        conv4_4_CPM = layers.conv2d(conv4_3_CPM, 256, 3, 1, activation_fn=None, scope='conv4_4_CPM')
+        conv4_4_CPM = tf.nn.relu(conv4_4_CPM)
+        conv4_5_CPM = layers.conv2d(conv4_4_CPM, 256, 3, 1, activation_fn=None, scope='conv4_5_CPM')
+        conv4_5_CPM = tf.nn.relu(conv4_5_CPM)
+        conv4_6_CPM = layers.conv2d(conv4_5_CPM, 256, 3, 1, activation_fn=None, scope='conv4_6_CPM')
+        conv4_6_CPM = tf.nn.relu(conv4_6_CPM)
+        conv4_7_CPM = layers.conv2d(conv4_6_CPM, 128, 3, 1, activation_fn=None, scope='conv4_7_CPM')
+        conv4_7_CPM = tf.nn.relu(conv4_7_CPM)
+    return conv4_7_CPM
+
+def inference_rpsm(feature):
+    with tf.variable_scope('RPSMNet'):
+        special_conv_1 = layers.conv2d(feature, 128, 3, 1, activation_fn=None, scope='special_conv_1')
+        special_conv_1 = tf.nn.relu(special_conv_1)
+        special_conv_2 = layers.conv2d(special_conv_1, 128, 3, 1, activation_fn=None, scope='special_conv_2')
+        special_conv_2 = tf.nn.relu(special_conv_2)
+        fa_conv_1 = layers.conv2d(special_conv_2, 128, 5, 2, activation_fn=None, scope='fa_conv_1')
+        fa_conv_1 = tf.nn.relu(fa_conv_1)
+        fa_conv_2 = layers.conv2d(fa_conv_2, 128, 5, 2, activation_fn=None, scope='fa_conv_2')
+        fa_conv_2 = tf.nn.relu(fa_conv_2)
