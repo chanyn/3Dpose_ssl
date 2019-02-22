@@ -103,9 +103,9 @@ tools/: python and matlab code
 
   
 
-###Training
+### Training
 
-####Offline Phase
+#### Offline Phase
 
 Our model consists of two cascade modules, so training phase can be divided into the following setps:
 
@@ -141,7 +141,7 @@ cd CAFFE_ROOT
 
 
 
-###Model Inference
+### Model Inference
 
 3D-to-2D project module are initialized from the well trained model, and they will be updated by minimizing the difference between the predicted 2D pose and projected 2D pose.
 
