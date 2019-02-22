@@ -1,0 +1,21 @@
+net: "train_test_cpm.prototxt"
+test_iter: 1200
+test_state: { stage: 'test-on-test' }
+test_interval: 23000
+test_initialization: false
+base_lr: 0.0001
+momentum: 0.9
+momentum2: 0.999
+lr_policy: "fixed"
+display: 100
+max_iter: 5000000
+snapshot: 100
+snapshot_prefix: "models/cpm_"
+solver_mode: GPU
+device_id: 0
+random_seed: 1701
+average_loss: 1000
+clip_gradients: 5
+type: "Adam"
+
+#debug_info:true

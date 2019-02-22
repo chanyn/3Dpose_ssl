@@ -1,6 +1,53 @@
 layer {  
   name: "demo"  
   type: "ImageDataLstm"  
+  top: "datah36m"  
+  top: "labelh36m"  
+  transform_param {  
+    scale: 0.00390625  
+    mean_value: 128  
+  }  
+  include {
+    phase: TRAIN
+  }
+  image_data_lstm_param {  
+    source: "/data/h36m/16skel_train_2d3d_clip.txt"  
+    root_folder: "Human3.6m_ROOT_DIR"
+    new_height: 368  
+    new_width: 368  
+    is_color: true 
+    batch_size: 5
+    shuffle: false 
+    label_dim: 81
+    is_shuffle_batch: true 
+  }  
+} 
+layer {  
+  name: "demo2"  
+  type: "ImageData"  
+  top: "datampii"  
+  top: "labelmpii"  
+  transform_param {  
+    scale: 0.00390625  
+    mean_value: 128  
+  }  
+  include {
+    phase: TRAIN
+  }
+  image_data_param {  
+    source: "/data/MPII/annotation/train_h36m.txt"  
+    root_folder: "MPII_ROOT_DIR" 
+    new_height: 368  
+    new_width: 368  
+    is_color: true 
+    batch_size: 3
+    shuffle: true 
+    label_dim: 33
+  }  
+}
+layer {  
+  name: "demo"  
+  type: "ImageDataLstm"  
   top: "data"  
   top: "label_clip"  
   transform_param {  
@@ -11,24 +58,41 @@ layer {
     phase: TEST
   }
   image_data_lstm_param {  
-    source: "DATA_FOLDER"  
-    root_folder: "/data/human3.6m/"  
+    source: "/data/h36m/16skel_test_2d3d_clip.txt"  
+    root_folder: "Human3.6m_ROOT_DIR"
     new_height: 368  
     new_width: 368  
     is_color: true 
-    batch_size: BATCH
+    batch_size: 4
     shuffle: false 
     label_dim: 81
     is_shuffle_batch: false 
   }  
 } 
 layer {
-  name: "slice"
+  name: "slice1"
   type: "Slice"
-  bottom: "label_clip"
-  top: "label2d"
+  bottom: "labelmpii"
+  top: "mpii_label2d"
+  top: "mpii_clip"
+  include {
+    phase: TRAIN
+  }
+  slice_param {
+    axis: 1
+    slice_point: 32
+  }
+}
+layer {
+  name: "slice2"
+  type: "Slice"
+  bottom: "labelh36m"
+  top: "h36m_label2d"
   top: "label3d"
-  top: "clip"
+  top: "h36m_clip"
+  include {
+    phase: TRAIN
+  }
   slice_param {
     axis: 1
     slice_point: 32
@@ -36,16 +100,73 @@ layer {
   }
 }
 layer {
+  name: "slice1"
+  type: "Slice"
+  bottom: "label_clip"
+  top: "label2d"
+  top: "label3d"
+  top: "clip"
+  include {
+    phase: TEST
+  }
+  slice_param {
+    axis: 1
+    slice_point: 32
+    slice_point: 80
+  }
+}
+
+layer {
+  name: "data"
+  type: "Concat"
+  bottom: "datah36m"
+  bottom: "datampii"
+  top: "data"
+  include {
+    phase: TRAIN
+  }
+  concat_param {
+    axis: 0
+  }
+}
+layer {
+  name: "concat_label2d"
+  type: "Concat"
+  bottom: "h36m_label2d"
+  bottom: "mpii_label2d"
+  top: "label2d"
+  include {
+    phase: TRAIN
+  }
+  concat_param {
+    axis: 0
+  }
+}
+layer {
+  name: "concat_clip"
+  type: "Concat"
+  bottom: "h36m_clip"
+  bottom: "mpii_clip"
+  top: "clip"
+  include {
+    phase: TRAIN
+  }
+  concat_param {
+    axis: 0
+  }
+}
+#########################################################################################
+layer {
   name: "conv1_1"
   type: "Convolution"
   bottom: "data"
   top: "conv1_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -73,11 +194,11 @@ layer {
   bottom: "conv1_1"
   top: "conv1_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -116,11 +237,11 @@ layer {
   bottom: "pool1_stage1"
   top: "conv2_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -148,11 +269,11 @@ layer {
   bottom: "conv2_1"
   top: "conv2_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -191,11 +312,11 @@ layer {
   bottom: "pool2_stage1"
   top: "conv3_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -223,11 +344,11 @@ layer {
   bottom: "conv3_1"
   top: "conv3_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -255,11 +376,11 @@ layer {
   bottom: "conv3_2"
   top: "conv3_3"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -287,11 +408,11 @@ layer {
   bottom: "conv3_3"
   top: "conv3_4"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -330,11 +451,11 @@ layer {
   bottom: "pool3_stage1"
   top: "conv4_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -362,11 +483,11 @@ layer {
   bottom: "conv4_1"
   top: "conv4_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -394,11 +515,11 @@ layer {
   bottom: "conv4_2"
   top: "conv4_3_CPM"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -426,11 +547,11 @@ layer {
   bottom: "conv4_3_CPM"
   top: "conv4_4_CPM"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -458,11 +579,11 @@ layer {
   bottom: "conv4_4_CPM"
   top: "conv4_5_CPM"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -490,11 +611,11 @@ layer {
   bottom: "conv4_5_CPM"
   top: "conv4_6_CPM"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -522,11 +643,11 @@ layer {
   bottom: "conv4_6_CPM"
   top: "conv4_7_CPM"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -548,18 +669,18 @@ layer {
   bottom: "conv4_7_CPM"
   top: "conv4_7_CPM"
 }
-
+##################################################
 layer {
   name: "special_conv_1"
   type: "Convolution"
   bottom: "conv4_7_CPM"
   top: "special_conv_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -574,6 +695,7 @@ layer {
       type: "constant"
     }
   }
+  propagate_down: 0 
 }
 layer {
   name: "relu_special_1"
@@ -587,11 +709,11 @@ layer {
   bottom: "special_conv_1"
   top: "special_conv_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -619,11 +741,11 @@ layer {
   bottom: "special_conv_2"
   top: "fa_conv_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -653,11 +775,11 @@ layer {
   bottom: "fa_conv_1"
   top: "fa_conv_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   convolution_param {
@@ -686,11 +808,11 @@ layer {
   bottom: "fa_conv_2"
   top: "fc"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -727,11 +849,11 @@ layer {
   bottom: "clip"
   top: "lstm1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   recurrent_param {
@@ -785,11 +907,11 @@ layer {
   bottom: "clip"
   top: "lstm2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   recurrent_param {
@@ -812,11 +934,11 @@ layer {
   bottom: "lstm2"
   top: "fc-final"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -848,37 +970,71 @@ layer {
   type: "InvertedOrder"
   bottom: "predict_inverted"
   top: "3dpredict"
+  #propagate_down: 0 
 }
 layer {
-  name: "evalution"
-  type: "MPJPEEvaluation"
+  name: "mask3d"
+  type: "Mask"
   bottom: "3dpredict"
-  bottom: "label3d"
-  top: "evalution"
-  loss_weight: 0.0
-  mpjpe_param {
-    save_filepath: "RESULT_unnorm.csv"
-    scale: 1
-    sample_num: 30
-    max_min_normalize: true
-    max_min_source: "/home/jiangchenhan/data/human3.6m/annotation/16point_mean_limb_scaled_max_min.csv"
+  top: "mask3d"
+  mask_param{
+    dim: 3
+    prob: 0.02
+  }
+  include {
+    phase: TRAIN
   }
 }
 layer {
-    name: "Save1"
-    type: "SavePath"
-    bottom: "3dpredict"
-    save_path_param {
-      save_path: "RESULT_norm.csv"
-   }
- }
-
-##############################################################################
+  name: "pred3d_mask"
+  type: "Eltwise"
+  bottom: "mask3d"
+  bottom: "3dpredict"
+  top: "3dpredict_mask"
+  include {
+    phase: TRAIN
+  }
+  eltwise_param {
+    operation: PROD
+  }
+}
+############ refine ###############
+layer {
+  name: "change_tmp"
+  type: "InnerProduct"
+  bottom: "3dpredict_mask"
+  top: "change_tmp"
+  include {
+    phase: TRAIN
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 1
+    decay_mult: 0
+  }
+  inner_product_param {
+    num_output: 1024
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+  }
+}
 layer {
   name: "change_tmp"
   type: "InnerProduct"
   bottom: "3dpredict"
   top: "change_tmp"
+  include {
+    phase: TEST
+  }
   param {
     lr_mult: 1
     decay_mult: 1
@@ -911,11 +1067,11 @@ layer {
   bottom: "change_tmp"
   top: "change"
   param {
-    lr_mult: 1
+    lr_mult: 2
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -940,7 +1096,7 @@ layer {
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -971,7 +1127,7 @@ layer {
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -1002,7 +1158,7 @@ layer {
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -1016,6 +1172,12 @@ layer {
       value: 0
     }
   }
+}
+layer {
+  name: "relu_project_3"
+  type: "ReLU"
+  bottom: "project_3"
+  top: "project_3"
 }
 layer {
   name: "eltwise1"
@@ -1028,22 +1190,16 @@ layer {
   }
 }
 layer {
-  name: "relu_residual1"
-  type: "ReLU"
-  bottom: "residual1"
-  top: "residual1"
-}
-layer {
   name: "project_2d"
   type: "InnerProduct"
   bottom: "residual1"
   top: "project_2d"
   param {
-    lr_mult: 1
+    lr_mult: 2
     decay_mult: 1
   }
   param {
-    lr_mult: 2
+    lr_mult: 1
     decay_mult: 0
   }
   inner_product_param {
@@ -1059,159 +1215,55 @@ layer {
   }
 }
 layer {
-  name: "2dprojectloss_tmp"
+  name: "2dprojectloss"
   type: "EuclideanLoss"
   bottom: "project_2d"
   bottom: "label2d"
-  top: "2dprojectloss_tmp"
+  top: "2dprojectloss"
+  include {
+    phase: TRAIN
+  }
 }
 layer {
-  name: "project_media"
-  type: "InnerProduct"
+  name: "2Dboneloss"
+  type: "SkelVectorLoss"
   bottom: "project_2d"
-  top: "project_media"
-  param {
-    lr_mult: 1
-    decay_mult: 1
+  bottom: "label2d"
+  top: "2Dboneloss"
+  skel_vector_param {
+    dim: 2
   }
-  param {
-    lr_mult: 2
-    decay_mult: 0
+  include {
+    phase: TRAIN
   }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
+}
+################# loss ####################
+layer {
+  name: "slice_pred"
+  type: "Slice"
+  bottom: "3dpredict"
+  top: "3dpredict_h36m"
+  top: "3dpredict_mpii"
+  include {
+    phase: TRAIN
+  }
+  slice_param {
+    axis: 0
+    slice_point: 5
   }
 }
 layer {
-  name: "relu_project_media"
-  type: "ReLU"
-  bottom: "project_media"
-  top: "project_media"
-}
-layer {
-  name: "eltwise2"
-  bottom: "residual1"
-  bottom: "project_media"
-  top: "residual2"
-  type: "Eltwise"
-  eltwise_param {
-    operation: SUM
-  }
-}
-layer {
-  name: "project_4"
-  type: "InnerProduct"
-  bottom: "residual2"
-  top: "project_4"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_project_4"
-  type: "ReLU"
-  bottom: "project_4"
-  top: "project_4"
-}
-layer {
-  name: "project_5"
-  type: "InnerProduct"
-  bottom: "project_4"
-  top: "project_5"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "eltwise3"
-  bottom: "project_1"
-  bottom: "project_5"
-  top: "residual3"
-  type: "Eltwise"
-  eltwise_param {
-    operation: SUM
-  }
-}
-layer {
-  name: "relu_residual3"
-  type: "ReLU"
-  bottom: "residual3"
-  top: "residual3"
-}
-layer {
-  name: "project_2d_2"
-  type: "InnerProduct"
-  bottom: "residual3"
-  top: "project_2d_2"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 32
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "eval2"
+  name: "evalution"
   type: "MPJPEEvaluation"
-  bottom: "change"
+  bottom: "3dpredict_h36m"
   bottom: "label3d"
-  top: "eval2"
+  top: "evalution"
   loss_weight: 0.0
+  include {
+    phase: TRAIN
+  }
   mpjpe_param {
-    save_filepath: "RESULT_change_unnorm.csv"
+    #save_filepath: "MASK2_unnorm.csv"
     scale: 1
     sample_num: 30
     max_min_normalize: true
@@ -1219,9 +1271,152 @@ layer {
   }
 }
 layer {
-  name: "2Dloss"
+  name: "3Dreconloss_h36m1"
   type: "EuclideanLoss"
+  bottom: "3dpredict_h36m"
+  bottom: "label3d"
+  top: "3Dreconloss_h36m1"
+  include {
+    phase: TRAIN
+  }
+}
+layer {
+  name: "3Dboneloss_h36m1"
+  type: "SkelVectorLoss"
+  bottom: "3dpredict_h36m"
+  bottom: "label3d"
+  top: "3Dboneloss_h36m1"
+  include {
+    phase: TRAIN
+  }
+  skel_vector_param {
+    dim: 3
+  }
+}
+#######################################################
+layer {
+  name: "slice_change"
+  type: "Slice"
+  bottom: "change"
+  top: "change_h36m"
+  top: "change_mpii"
+  include {
+    phase: TRAIN
+  }
+  slice_param {
+    axis: 0
+    slice_point: 5
+  }
+}
+layer {
+  name: "evalution2"
+  type: "MPJPEEvaluation"
+  bottom: "change_h36m"
+  bottom: "label3d"
+  top: "evalution2"
+  loss_weight: 0.0
+  include {
+    phase: TRAIN
+  }
+  mpjpe_param {
+    #save_filepath: "MASK2_unnorm_change.csv"
+    scale: 1
+    sample_num: 30
+    max_min_normalize: true
+    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+  }
+}
+layer {
+  name: "3Dreconloss_h36m2"
+  type: "EuclideanLoss"
+  bottom: "change_h36m"
+  bottom: "label3d"
+  top: "3Dreconloss_h36m2"
+  include {
+    phase: TRAIN
+  }
+}
+layer {
+  name: "3Dboneloss_h36m2"
+  type: "SkelVectorLoss"
+  bottom: "change_h36m"
+  bottom: "label3d"
+  top: "3Dboneloss_h36m2"
+  include {
+    phase: TRAIN
+  }
+  skel_vector_param {
+    dim: 3
+  }
+}
+layer {
+  name: "losstmp"
+  type: "EuclideanLoss"
+  bottom: "change_mpii"
+  bottom: "change_mpii"
+  top: "losstmp"
+  include {
+    phase: TRAIN
+  }
+  propagate_down: 0 
+  propagate_down: 0 
+}
+layer {
+  name: "losstmp2"
+  type: "EuclideanLoss"
+  bottom: "3dpredict_mpii"
+  bottom: "3dpredict_mpii"
+  top: "losstmp2"
+  include {
+    phase: TRAIN
+  }
+  propagate_down: 0 
+  propagate_down: 0 
+}
+######################## test loss ########################
+layer {
+  name: "evalution"
+  type: "MPJPEEvaluation"
+  bottom: "3dpredict"
+  bottom: "label3d"
+  top: "evalution"
+  loss_weight: 0.0
+  include {
+    phase: TEST
+  }
+  mpjpe_param {
+    save_filepath: "MASK_unnorm.csv"
+    scale: 1
+    sample_num: 30
+    max_min_normalize: true
+    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+  }
+}
+layer {
+  name: "evalution2"
+  type: "MPJPEEvaluation"
+  bottom: "change"
+  bottom: "label3d"
+  top: "evalution2"
+  loss_weight: 0.0
+  include {
+    phase: TEST
+  }
+  mpjpe_param {
+    save_filepath: "MASK2_unnorm_change.csv"
+    scale: 1
+    sample_num: 30
+    max_min_normalize: true
+    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+  }
+}
+layer {
+  name: "loss2d"
+  type: "EuclideanLoss"
+  bottom: "project_2d"
   bottom: "label2d"
-  bottom: "project_2d_2"
-  top: "2Dloss" 
+  top: "loss2d"
+  include {
+    phase: TEST
+  }
 }

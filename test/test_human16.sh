@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-data_root="/home/jiangchenhan/data/human3.6m/annotation/16test/"
+data_root="/data/h36m/gt/test/"
 phase=test
 num_action=15
 prototxt_fn=$1/template_16_merge.prototxt

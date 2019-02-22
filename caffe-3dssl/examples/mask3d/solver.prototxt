@@ -1,0 +1,21 @@
+net: "mask3d.prototxt"
+test_iter: 22000
+test_state: { stage: 'test-on-test' }
+test_interval: 50000
+test_initialization: false
+   
+base_lr: 0.00001
+momentum: 0.9
+momentum2: 0.999
+  
+lr_policy: "fixed"
+ 
+display: 1000
+max_iter: 400000
+snapshot: 50000
+snapshot_prefix: "params/mask3d"
+ 
+solver_mode: GPU
+device_id: 1
+type: "Adam"
+clip_gradients: 5

@@ -3,23 +3,47 @@ layer {
   type: "ImageDataLstm"  
   top: "data"  
   top: "label_clip"  
+  include {  
+    phase: TRAIN  
+  }  
   transform_param {  
     scale: 0.00390625  
     mean_value: 128  
   }  
-  include {
-    phase: TEST
-  }
   image_data_lstm_param {  
-    source: "DATA_FOLDER"  
-    root_folder: "/data/human3.6m/"  
+    source: "/data/h36m/16skel_train_2d3d_clip.txt"  
+    root_folder: "Human3.6m_ROOT_DIR"
     new_height: 368  
     new_width: 368  
     is_color: true 
-    batch_size: BATCH
-    shuffle: false 
-    label_dim: 81
-    is_shuffle_batch: false 
+    batch_size: 5  
+    shuffle: false
+    label_dim: 81 
+    is_shuffle_batch: true
+  }  
+}
+layer {  
+  name: "demo"  
+  type: "ImageDataLstm"  
+  top: "data"  
+  top: "label_clip"  
+  include {  
+    phase: TEST
+  }  
+  transform_param {  
+    scale: 0.00390625  
+    mean_value: 128  
+  }  
+  image_data_lstm_param {  
+    source: "/data/h36m/16skel_test_2d3d_clip.txt"   
+    root_folder: "Human3.6m_ROOT_DIR" 
+    new_height: 368  
+    new_width: 368  
+    is_color: true 
+    batch_size: 5  
+    shuffle: false
+    label_dim: 81 
+    is_shuffle_batch: false
   }  
 } 
 layer {
@@ -29,12 +53,16 @@ layer {
   top: "label2d"
   top: "label3d"
   top: "clip"
+  include {
+    phase: TEST
+  }
   slice_param {
     axis: 1
     slice_point: 32
     slice_point: 80
   }
 }
+
 layer {
   name: "conv1_1"
   type: "Convolution"
@@ -555,11 +583,11 @@ layer {
   bottom: "conv4_7_CPM"
   top: "special_conv_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1.0
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 2.0
     decay_mult: 0
   }
   convolution_param {
@@ -587,11 +615,11 @@ layer {
   bottom: "special_conv_1"
   top: "special_conv_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1.0
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 2.0
     decay_mult: 0
   }
   convolution_param {
@@ -613,17 +641,19 @@ layer {
   bottom: "special_conv_2"
   top: "special_conv_2"
 }
+
+#feature adaption module
 layer {
   name: "fa_conv_1"
   type: "Convolution"
   bottom: "special_conv_2"
   top: "fa_conv_1"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1.0
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 2.0
     decay_mult: 0
   }
   convolution_param {
@@ -646,18 +676,17 @@ layer {
   bottom: "fa_conv_1"
   top: "fa_conv_1"
 }
- 
 layer {
   name: "fa_conv_2"
   type: "Convolution"
   bottom: "fa_conv_1"
   top: "fa_conv_2"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1.0
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 2.0
     decay_mult: 0
   }
   convolution_param {
@@ -686,11 +715,11 @@ layer {
   bottom: "fa_conv_2"
   top: "fc"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 1
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 2
     decay_mult: 0
   }
   inner_product_param {
@@ -726,14 +755,6 @@ layer {
   bottom: "fc-reshape"
   bottom: "clip"
   top: "lstm1"
-  param {
-    lr_mult: 0
-    decay_mult: 0
-  }
-  param {
-    lr_mult: 0
-    decay_mult: 0
-  }
   recurrent_param {
     num_output: 1024
     weight_filler {
@@ -747,6 +768,7 @@ layer {
     }
   }
 }
+
 layer{
   name: "reshape-lstm1"
   type: "Reshape"
@@ -784,14 +806,6 @@ layer {
   bottom: "lstm2_input"
   bottom: "clip"
   top: "lstm2"
-  param {
-    lr_mult: 0
-    decay_mult: 0
-  }
-  param {
-    lr_mult: 0
-    decay_mult: 0
-  }
   recurrent_param {
     num_output: 1024
     weight_filler {
@@ -805,18 +819,17 @@ layer {
     }
   }
 }
-
 layer {
   name: "fc-final_16"
   type: "InnerProduct"
   bottom: "lstm2"
   top: "fc-final"
   param {
-    lr_mult: 0
-    decay_mult: 0
+    lr_mult: 10
+    decay_mult: 1
   }
   param {
-    lr_mult: 0
+    lr_mult: 20
     decay_mult: 0
   }
   inner_product_param {
@@ -835,7 +848,7 @@ layer{
   name: "reshape-fc"
   type: "Reshape"
   bottom: "fc-final"
-  top: "predict_inverted"
+  top: "predict"
   reshape_param{
     shape{
       dim: -1
@@ -846,382 +859,47 @@ layer{
 layer {
   name: "inverted2"
   type: "InvertedOrder"
-  bottom: "predict_inverted"
-  top: "3dpredict"
+  top: "predict_inverted"
+  bottom: "predict"
 }
+
+layer {
+  name: "loss"
+  type: "EuclideanLoss"
+  bottom: "predict_inverted"
+  bottom: "label3d"
+  top: "loss" 
+}
+
+layer {
+  name: "tmp"
+  type: "EuclideanLoss"
+  bottom: "label2d"
+  bottom: "label2d"
+  top: "tmp"
+}
+
 layer {
   name: "evalution"
   type: "MPJPEEvaluation"
-  bottom: "3dpredict"
-  bottom: "label3d"
+  bottom: "predict_inverted"
+  bottom: "label"
   top: "evalution"
   loss_weight: 0.0
   mpjpe_param {
-    save_filepath: "RESULT_unnorm.csv"
+#    save_filepath: "results.csv"
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/home/jiangchenhan/data/human3.6m/annotation/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
-layer {
-    name: "Save1"
-    type: "SavePath"
-    bottom: "3dpredict"
-    save_path_param {
-      save_path: "RESULT_norm.csv"
-   }
- }
 
-##############################################################################
-layer {
-  name: "change_tmp"
-  type: "InnerProduct"
-  bottom: "3dpredict"
-  top: "change_tmp"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_change_tmp"
-  type: "ReLU"
-  bottom: "change_tmp"
-  top: "change_tmp"
-}
-layer {
-  name: "change"
-  type: "InnerProduct"
-  bottom: "change_tmp"
-  top: "change"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 48
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "project_1"
-  type: "InnerProduct"
-  bottom: "change"
-  top: "project_1"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_project_1"
-  type: "ReLU"
-  bottom: "project_1"
-  top: "project_1"
-}
-layer {
-  name: "project_2"
-  type: "InnerProduct"
-  bottom: "project_1"
-  top: "project_2"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_project_2"
-  type: "ReLU"
-  bottom: "project_2"
-  top: "project_2"
-}
-layer {
-  name: "project_3"
-  type: "InnerProduct"
-  bottom: "project_2"
-  top: "project_3"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "eltwise1"
-  bottom: "project_1"
-  bottom: "project_3"
-  top: "residual1"
-  type: "Eltwise"
-  eltwise_param {
-    operation: SUM
-  }
-}
-layer {
-  name: "relu_residual1"
-  type: "ReLU"
-  bottom: "residual1"
-  top: "residual1"
-}
-layer {
-  name: "project_2d"
-  type: "InnerProduct"
-  bottom: "residual1"
-  top: "project_2d"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 32
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "2dprojectloss_tmp"
-  type: "EuclideanLoss"
-  bottom: "project_2d"
-  bottom: "label2d"
-  top: "2dprojectloss_tmp"
-}
-layer {
-  name: "project_media"
-  type: "InnerProduct"
-  bottom: "project_2d"
-  top: "project_media"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_project_media"
-  type: "ReLU"
-  bottom: "project_media"
-  top: "project_media"
-}
-layer {
-  name: "eltwise2"
-  bottom: "residual1"
-  bottom: "project_media"
-  top: "residual2"
-  type: "Eltwise"
-  eltwise_param {
-    operation: SUM
-  }
-}
-layer {
-  name: "project_4"
-  type: "InnerProduct"
-  bottom: "residual2"
-  top: "project_4"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "relu_project_4"
-  type: "ReLU"
-  bottom: "project_4"
-  top: "project_4"
-}
-layer {
-  name: "project_5"
-  type: "InnerProduct"
-  bottom: "project_4"
-  top: "project_5"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 1024
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "eltwise3"
-  bottom: "project_1"
-  bottom: "project_5"
-  top: "residual3"
-  type: "Eltwise"
-  eltwise_param {
-    operation: SUM
-  }
-}
-layer {
-  name: "relu_residual3"
-  type: "ReLU"
-  bottom: "residual3"
-  top: "residual3"
-}
-layer {
-  name: "project_2d_2"
-  type: "InnerProduct"
-  bottom: "residual3"
-  top: "project_2d_2"
-  param {
-    lr_mult: 1
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 2
-    decay_mult: 0
-  }
-  inner_product_param {
-    num_output: 32
-    weight_filler {
-      type: "gaussian"
-      std: 0.01
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-  }
-}
-layer {
-  name: "eval2"
-  type: "MPJPEEvaluation"
-  bottom: "change"
-  bottom: "label3d"
-  top: "eval2"
-  loss_weight: 0.0
-  mpjpe_param {
-    save_filepath: "RESULT_change_unnorm.csv"
-    scale: 1
-    sample_num: 30
-    max_min_normalize: true
-    max_min_source: "/home/jiangchenhan/data/human3.6m/annotation/16point_mean_limb_scaled_max_min.csv"
-  }
-}
-layer {
-  name: "2Dloss"
-  type: "EuclideanLoss"
-  bottom: "label2d"
-  bottom: "project_2d_2"
-  top: "2Dloss" 
-}
+#layer {
+#  name: "save"
+#  type: "SavePath"
+#  bottom: "predict_inverted"
+#  save_path_param {
+#    save_path: "test/test_pred_result.csv"
+# }
+#}
