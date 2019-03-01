@@ -19,6 +19,11 @@ We proposed results on the Human3.6M, KTH Football II and MPII dataset.
 <p align="center">
     <img src="http://www.sysu-hcp.net/wp-content/uploads/2019/01/WeChat-Screenshot_20190111210546.png">
 </p>
+
+### License
+
+This project is released for Adamic Research Use only.
+
 ### Get Started
 
 Clone the repo:
@@ -103,9 +108,9 @@ tools/: python and matlab code
 
   
 
-###Training
+### Training
 
-####Offline Phase
+#### Offline Phase
 
 Our model consists of two cascade modules, so training phase can be divided into the following setps:
 
@@ -141,7 +146,7 @@ cd CAFFE_ROOT
 
 
 
-###Model Inference
+### Model Inference
 
 3D-to-2D project module are initialized from the well trained model, and they will be updated by minimizing the difference between the predicted 2D pose and projected 2D pose.
 
