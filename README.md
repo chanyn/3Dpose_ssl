@@ -19,13 +19,6 @@ We proposed results on the Human3.6M, KTH Football II and MPII dataset.
 <p align="center">
     <img src="http://www.sysu-hcp.net/wp-content/uploads/2019/01/WeChat-Screenshot_20190111210546.png">
 </p>
-
-
-
-### License
-
-This project is released for academic research use only.
-
 ### Get Started
 
 Clone the repo:
@@ -110,9 +103,9 @@ tools/: python and matlab code
 
   
 
-### Training
+###Training
 
-#### Offline Phase
+####Offline Phase
 
 Our model consists of two cascade modules, so training phase can be divided into the following setps:
 
@@ -148,11 +141,11 @@ cd CAFFE_ROOT
 
 
 
-### Model Inference
+###Model Inference
 
 3D-to-2D project module are initialized from the well trained model, and they will be updated by minimizing the difference between the predicted 2D pose and projected 2D pose.
 
-+ Inference with provided models
++ Inference with [provided models](https://drive.google.com/open?id=1dMuPuD_JdHuMIMapwE2DwgJ2IGK04xhQ)
 
   ```shell
   # Step1: Download the trained model
@@ -180,6 +173,45 @@ cd CAFFE_ROOT
 
   
 
++ Inference with [Our2d-model](https://drive.google.com/open?id=19kTyttzUnm_1_7HEwoNKCXPP2QVo_zcK)
+
+  ```shell
+  # Maybe you want to predict 2d.
+  # The model we use to predict 2d pose is similar with our 3dpredict model without ssl module.
+  # Or you can use Hourglass(https://github.com/princeton-vl/pose-hg-demo) to predict 2d pose
+  
+  # Step1.1: Download the trained merge model
+  cd PROJECT_ROOT
+  mkdir models && cd models
+  wget -v https://drive.google.com/open?id=19kTyttzUnm_1_7HEwoNKCXPP2QVo_zcK
+  unzip our2d.zip
+  rm -r our2d.zip
+  # move 2d prototxt to PROJECT_ROOT/test/
+  mv our2d/2d ../test/
+  cd ../
+  
+  # Step1.2: save 2D prediction
+  cd test
+  # change 'data_root' in test_human16.sh 
+  # change 'root_folder' in 2d/template_16_merge.prototxt
+  # test_human16.sh [$1 deploy.prototxt] [$2 trained model] [$3 save dir] [$4 batchsize]
+  sh test_human16.sh 2d/ ../models/our2d/2d_iter_800000.caffemodel our2d 5
+  # replace predict 2d pose in data dir or change data_dir in tensorflow/pred_v2.py
+  mv our2d /data/h36m/ours_2d/bilstm2d-p1-800000
+  
+  
+  # Step2 is same with above
+  
+  
+  # Step3: online refine 3D pose prediction
+  # protocal: 1/3 , default is 1
+  # pose2d: ours/hourglass/gt, default is ours
+  # coarse_3d: saved results in Sept2
+  python pred_v2.py --trained_model ../models/model_extension_mask3d/mask3d-400000.pkl --protocol 1 --data_dir /data/h36m/ --coarse_3d ../test/mask3d --save srr_results --pose2d ours
+  ```
+
+  
+
 + Inference with yourself
 
   Only difference is that you should transfer caffemodel of 3D-to-2D project module to pkl file. We provide *gen_refinepkl.py* in tools/.
@@ -197,8 +229,13 @@ cd CAFFE_ROOT
 
 + Evaluation
 
-  ```
+  ```shell
+  # Print MPJP 
   run tools/eval_h36m.m
+  
+  # Visualization of 2dpose/ 3d gt pose/ 3d coarse pose/ 3d refine pose
+  # Please change data_root in visualization.m before running
+  run visualization.m
   ```
 
 

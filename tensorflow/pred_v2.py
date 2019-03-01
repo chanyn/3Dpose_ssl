@@ -132,8 +132,11 @@ def train(action):
 	config = tf.ConfigProto()
 	config.gpu_options.per_process_gpu_memory_fraction = 0.9
 	save_path = os.path.join(FLAGS.save_root, str(FLAGS.learning_rate) + "mpjp_" + str(action) + ".txt")
+        save_path1 = os.path.join(FLAGS.save_root, "refine3d_" + str(action) +".txt")
 
-	with tf.Session(config=config) as sess, open(save_path, 'w') as fw:
+        with tf.Session(config=config) as sess, open(save_path, 'w') as fw, open(save_path1, 'w') as fw1:
+
+	#with tf.Session(config=config) as sess, open(save_path, 'w') as fw:
 		FLAGS.batch_size = 1
 		print("Creating %d bi-layers of %d units with batchsize %d" % (FLAGS.num_layers, FLAGS.linear_size, FLAGS.batch_size))
 		model = create_model(sess, FLAGS.batch_size)
@@ -192,6 +195,7 @@ def train(action):
 					  "AVERAGE: {0}  Before: {1}\n"
 					  "PLoss: {2}    BLoss: {3}\n".format(mean_mpjp, bf_avg, point_loss, bone_loss))
 
+                        fw1.write("{0}\n".format(transwrite(unnorm_enc_in_refine)))
 			fw.write("\n")
 			model.saver.restore(sess, "checkpoint/init-0")
 			sys.stdout.flush()

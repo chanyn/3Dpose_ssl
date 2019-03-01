@@ -1,12 +1,27 @@
+% before running, please change follow root by yourself
+data_root = '/data';
+% set groundturth root
+root_gt = data_root + '/h36m/gt/test/';
+% set coarse 3d predict root
+root_coarse3d = data_root + '/h36m/ours_3d/mask3d-400000/';
+% set refine 3d predict root
+root_refine = '/home/cyan/code/tensorflow/z_refine/humaneva/1213/';
+% set 2dpose root, if use_hg2d=True use hourglass predict 2d
+% if use_hg2d=False, use our 2d prediction: root_2d = data_root + '/h36m/ours_2d/bilstm2d-p1-800000/';
+use_hg2d = True;
+root_2d = data_root + '/h36m/hg2dh36m/';
+% set img root
+im_root = data_root + '/human3.6m/';
+
+
 close all;
 clear;clc;
 addpaths;
 
-lr = 0.0001;
-% root_folder1='/home/cyan/code/tensorflow/z_refine/p1_all/end2end-200000/';
-root_folder1='/home/cyan/code/tensorflow/z_refine/humaneva/1213/';
 eval=zeros(15);
 m=[];
+
+% load skel information
 skel = load('skel_16');
 skel = skel.skel;
 
@@ -18,18 +33,14 @@ ss = '%s%f';
 for i=1:31
    ss=strcat(ss,'%f');
 end
-max_min = csvread('/home/cyan/data/HumanEVA/humaneva_junxin/tools3/point_max_min_16.txt');
-% max_min = csvread('/home/cyan/data/human3.6m/annotation/16point_mean_limb_scaled_max_min.csv');
-% root_folder = '/home/cyan/data/human3.6m/annotation/16test/';
-root_folder = '/home/cyan/data/HumanEVA/new_img_list/3d_16/';
-root_2dhg = '/home/cyan/cp_to_shenji/12/humaneva/test2d-150000/';
-im_root = '/home/cyan/data/HumanEVA/';%'/home/cyan/data/human3.6m/';
 
-for folder_i = 1:9
+max_min = csvread(data_root + '/h36m/16point_mean_limb_scaled_max_min.csv');
+
+for folder_i = 1:15
     action_id = num2str(folder_i);
     fliename = fopen(strcat(root_folder,'test',action_id,'.txt'));
-    file = strcat(num2str(lr),'mpjp_',action_id,'_v2.txt');
-    fid = fopen(fullfile(root_folder1, file),'r');
+    file = strcat('mpjp_',action_id,'.txt'); % refine 3dpose mpjp eval
+    fid = fopen(fullfile(root_refine, file),'r');
     a = cell2mat(textscan(fid,'%f%f%f%f%f%f'));
     [min_a, I] = min(a,[],2);
     sub_a = a(:,1) - min_a;
@@ -44,22 +55,26 @@ for folder_i = 1:9
     gt_tmp = gt2d3d(:,33:80);
     gt_tmp = gt_tmp .* repmat(max_min(1,:)-max_min(2,:),[size(gt_tmp,1),1]) + repmat(max_min(2,:),[size(gt_tmp,1),1]);
     
-%     hg2d_tmp = textscan(fopen([root_2dhg,'test',action_id,'_square2d.txt'],'r'),ss,'delimiter',[' ',',']);
-%     hg2d_tmp{1,1}=[];
-%     hg2d_tmp = cell2mat(hg2d_tmp);
-    pred2d_tmp = csvread([root_2dhg,'test',action_id,'_norm.csv']);
-    hg2d_tmp = pred2d_tmp(:,2:end);
+    if use_hg2d
+    	hg2d_tmp = textscan(fopen([root_2d,'test',action_id,'_square2d.txt'],'r'),ss,'delimiter',[' ',',']);
+    	hg2d_tmp{1,1}=[];
+    	hg2d_tmp = cell2mat(hg2d_tmp);
+    else
+    	pred2d_tmp = csvread([root_2d,'test',action_id,'_norm.csv']);
+    	hg2d_tmp = pred2d_tmp(:,2:end);
 
-    rpsm_tmp = csvread(['/home/cyan/cp_to_shenji/10/end2end-390000/result',action_id,'_unnorm.csv']);
-    rpsm_tmp = rpsm_tmp(:,2:end);
-    for j=50:length(idex)
+    coarse3d_tmp = csvread([root_coarse3d, action_id, '_unnorm.csv']);
+    coarse3d_tmp = coarse3d_tmp(:,2:end);
+
+    % show every frame img
+    for j=1:length(idex)
         idex(j)
         im = imread([im_root,im_name{idex(j)}]);
-        refine_tmp = csvread([root_folder1,'record_s',num2str(I(idex(j))-1),'_',action_id,'.txt']);
+        refine_tmp = csvread([root_refine,'refine3d', '_', action_id,'.txt']);
         refine = refine_tmp(2*idex(j),:);
         refine = reshape(refine,3,16);
-        rpsm = rpsm_tmp(idex(j),:);
-        rpsm = reshape(rpsm,3,16);
+        coarse3d = coarse3d_tmp(idex(j),:);
+        coarse3d = reshape(coarse3d,3,16);
         gt = gt_tmp(idex(j),:);
         gt = reshape(gt,3,16);
         hg2d = hg2d_tmp(idex(j),:);
@@ -73,8 +88,8 @@ for folder_i = 1:9
         vis2Dskel(hg2d,skel);title('im & 2d');
         hold off
         subplot(1,4,2),vis3Dskel(gt*0.003,skel, 'viewpoint',[15 15]);title('gt');
-        subplot(1,4,3),vis3Dskel(rpsm*0.003,skel, 'viewpoint',[15 15]);title('rpsm');
-        subplot(1,4,4),vis3Dskel(refine*0.003,skel, 'viewpoint',[15 15]);title('refine');
+        subplot(1,4,3),vis3Dskel(coarse3d*0.003,skel, 'viewpoint',[15 15]);title('coarse3d');
+        subplot(1,4,4),vis3Dskel(refine*0.003,skel, 'viewpoint',[15 15]);title('refine3d');
         pause();     
     end  
 end
