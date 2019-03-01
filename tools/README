@@ -1,3 +1,3 @@
 gen_refinepkl.py : transfer caffemodel to tensorflow
 eval_h36m.m : evaluate mpjpes by action
-vis_rpsmandrefine.m : visulization
+visulization.m : visulization
