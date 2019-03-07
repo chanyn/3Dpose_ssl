@@ -76,7 +76,7 @@ tools/: python and matlab code
 
   We change annotation of Human3.6m to hold 16 points ( 'RFoot' 'RKnee' 'RHip' 'LHip' 'LKnee' 'LFoot' 'Hip' 'Spine' 'Thorax' 'Head' 'RWrist' 'RElbow'  'RShoulder' 'LShoulder' 'LElbow' 'LWrist') in keeping with MPII. 
 
-  We have provided [count mean file and protocol #I & protocol #III split list of Human3.6m.](https://drive.google.com/open?id=1uXy_BdfS8nt6dghSI6gDqWmcB84_jl3o) Follow [Human3.6m website](http://vision.imar.ro/human3.6m/description.php) to download videos and API. We split each video per 5 frames.  And list format of 16skel_train/test_* is [img_path] [P1<sub>2dx</sub>, P1<sub>2dy</sub>, P2<sub>2dx</sub>, P2<sub>2dy</sub>,..., P1<sub>3dx</sub>, P1<sub>3dy</sub>, P1<sub>3dz</sub>, P2<sub>3dx</sub>, P2<sub>3dy</sub>, P2<sub>3dz</sub>,...] clip. Clip = 0 denote reset lstm.
+  We have provided [count mean file and protocol #I & protocol #III split list of Human3.6m.](https://drive.google.com/open?id=1uXy_BdfS8nt6dghSI6gDqWmcB84_jl3o) Follow [Human3.6m website](http://vision.imar.ro/human3.6m/description.php) to download videos and API. We split each video per 5 frames, you can directly download processed square data in this [link](https://pan.baidu.com/s/1ieLHH9w8tnKPcB836Jxtcw).  And list format of 16skel_train/test_* is [img_path] [P1<sub>2dx</sub>, P1<sub>2dy</sub>, P2<sub>2dx</sub>, P2<sub>2dy</sub>,..., P1<sub>3dx</sub>, P1<sub>3dy</sub>, P1<sub>3dz</sub>, P2<sub>3dx</sub>, P2<sub>3dy</sub>, P2<sub>3dz</sub>,...] clip. Clip = 0 denote reset lstm.
 
   ```shell
   # files construction
@@ -256,4 +256,3 @@ cd CAFFE_ROOT
   publisher={IEEE}
 }
 ```
-
