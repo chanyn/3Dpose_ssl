@@ -32,7 +32,7 @@ Clone the repo:
 git clone https://github.com/chanyn/3Dpose_ssl.git
 ```
 
-Our code is orgamized as follows:
+Our code is organized as follows:
 
 ```
 caffe-3dssl/: support caffe
