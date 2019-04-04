@@ -1196,6 +1196,9 @@ layer {
   bottom: "3dpredict_h36m"
   bottom: "label3d"
   top: "3Dboneloss_h36m1"
+  skel_vector_param{
+  dim: 3
+  }
   include {
     phase: TRAIN
   }
@@ -1249,6 +1252,9 @@ layer {
   bottom: "change_h36m"
   bottom: "label3d"
   top: "3Dboneloss_h36m2"
+  skel_vector_param{
+  dim: 3
+  }
   include {
     phase: TRAIN
   }
