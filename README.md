@@ -45,7 +45,7 @@ tools/: python and matlab code
 
 #### Requirements
 
-1. NVIDIA GPU and cuDNN are required to have fast speeds. For now, CUDA 8.0 with cuDNN 6.0 has been tested. The other versions should be working.
+1. NVIDIA GPU and cuDNN are required to have fast speeds. For now, CUDA 8.0 with cuDNN 5.1 has been tested. The other versions should be working.
 2. Caffe Python wrapper is required. 
 3. Tensorflow 1.1.0
 4. python 2.7.13
