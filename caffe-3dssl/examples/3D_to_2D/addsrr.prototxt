@@ -1,3 +1,4 @@
+#Please change the "/home/keze/Codes" to your own path before training.
 layer {  
   name: "demo"  
   type: "ImageDataLstm"  
@@ -11,8 +12,8 @@ layer {
     phase: TRAIN
   }
   image_data_lstm_param {  
-    source: "/data/h36m/16skel_train_2d3d_clip.txt"  
-    root_folder: "Human3.6m_ROOT_DIR"
+    source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16skel_train_2d3d_clip.txt"  
+    root_folder: "/home/keze/Codes/3Dpose_ssl/data/h36m/"
     new_height: 368  
     new_width: 368  
     is_color: true 
@@ -35,8 +36,8 @@ layer {
     phase: TRAIN
   }
   image_data_param {  
-    source: "/data/MPII/annotation/train_h36m.txt"  
-    root_folder: "MPII_ROOT_DIR"  
+    source: "/home/keze/Codes/3Dpose_ssl/data/MPII/annotation/train_h36m.txt"  
+    root_folder: "/home/keze/Codes/3Dpose_ssl/data/MPII/"  
     new_height: 368  
     new_width: 368  
     is_color: true 
@@ -58,8 +59,8 @@ layer {
     phase: TEST
   }
   image_data_lstm_param {  
-    source: "/data/h36m/16skel_test_2d3d_clip.txt"  
-    root_folder: "Human3.6m_ROOT_DIR"
+    source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16skel_test_2d3d_clip.txt"  
+    root_folder: "/home/keze/Codes/3Dpose_ssl/data/h36m/"
     new_height: 368  
     new_width: 368  
     is_color: true 
@@ -1177,7 +1178,7 @@ layer {
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
 layer {
@@ -1197,7 +1198,7 @@ layer {
   bottom: "label3d"
   top: "3Dboneloss_h36m1"
   skel_vector_param{
-  dim: 3
+  dim : 3
   }
   include {
     phase: TRAIN
@@ -1233,7 +1234,7 @@ layer {
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
 layer {
@@ -1253,7 +1254,7 @@ layer {
   bottom: "label3d"
   top: "3Dboneloss_h36m2"
   skel_vector_param{
-  dim: 3
+  dim : 3
   }
   include {
     phase: TRAIN
@@ -1299,7 +1300,7 @@ layer {
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
 layer {
@@ -1317,6 +1318,6 @@ layer {
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
