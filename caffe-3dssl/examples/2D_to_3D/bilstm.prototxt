@@ -53,9 +53,9 @@ layer {
   top: "label2d"
   top: "label3d"
   top: "clip"
-  include {
-    phase: TEST
-  }
+  #include {
+  # phase: TEST
+  #}
   slice_param {
     axis: 1
     slice_point: 32
