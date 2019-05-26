@@ -1,3 +1,4 @@
+#Please replace the "/home/keze/Codes/3Dpose_ssl" into your own path.
 layer {  
   name: "demo"  
   type: "ImageDataLstm"  
@@ -11,8 +12,8 @@ layer {
     mean_value: 128  
   }  
   image_data_lstm_param {  
-    source: "/data/h36m/16skel_train_2d3d_clip.txt"  
-    root_folder: "Human3.6m_ROOT_DIR"
+    source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16skel_train_2d3d_clip.txt"  
+    root_folder: "/home/keze/Codes/3Dpose_ssl/data/h36m/"
     new_height: 368  
     new_width: 368  
     is_color: true 
@@ -35,8 +36,8 @@ layer {
     mean_value: 128  
   }  
   image_data_lstm_param {  
-    source: "/data/h36m/16skel_test_2d3d_clip.txt"   
-    root_folder: "Human3.6m_ROOT_DIR" 
+    source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16skel_test_2d3d_clip.txt"   
+    root_folder: "/home/keze/Codes/3Dpose_ssl/data/h36m/" 
     new_height: 368  
     new_width: 368  
     is_color: true 
@@ -46,6 +47,7 @@ layer {
     is_shuffle_batch: false
   }  
 } 
+
 layer {
   name: "slice"
   type: "Slice"
@@ -54,7 +56,7 @@ layer {
   top: "label3d"
   top: "clip"
   #include {
-  # phase: TEST
+  #  phase: TEST
   #}
   slice_param {
     axis: 1
@@ -871,27 +873,27 @@ layer {
   top: "loss" 
 }
 
-layer {
-  name: "tmp"
-  type: "EuclideanLoss"
-  bottom: "label2d"
-  bottom: "label2d"
-  top: "tmp"
-}
+#layer {
+#  name: "tmp"
+#  type: "EuclideanLoss"
+#  bottom: "label2d"
+#  bottom: "label2d"
+#  top: "tmp"
+#}
 
 layer {
-  name: "evalution"
+  name: "evaluation"
   type: "MPJPEEvaluation"
   bottom: "predict_inverted"
-  bottom: "label"
-  top: "evalution"
+  bottom: "label3d"
+  top: "evaluation"
   loss_weight: 0.0
   mpjpe_param {
 #    save_filepath: "results.csv"
     scale: 1
     sample_num: 30
     max_min_normalize: true
-    max_min_source: "/data/h36m/16point_mean_limb_scaled_max_min.csv"
+    max_min_source: "/home/keze/Codes/3Dpose_ssl/data/h36m/16point_mean_limb_scaled_max_min.csv"
   }
 }
 
