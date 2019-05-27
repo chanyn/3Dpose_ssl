@@ -424,7 +424,7 @@ message LayerParameter {
 
 message MaskParameter{
   optional int32 dim = 1 [default = 2];
-  optional int32 prob = 2;
+  optional float prob = 2;
 }
 message SkelVectorParameter{
   optional int32 dim = 1 [default = 3];
