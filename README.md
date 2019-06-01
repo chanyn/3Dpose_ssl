@@ -31,6 +31,8 @@ Clone the repo:
 ```
 git clone https://github.com/chanyn/3Dpose_ssl.git
 ```
+or
+directly download from https://www.dropbox.com/s/szfkir7hgrc9kfw/3Dpose_ssl.tar.gz?dl=0 (including datasets and well-compiled caffe under cuda-8.0)
 
 Our code is orgamized as follows:
 
